@@ -50,10 +50,26 @@ export function categoryMeta(id: SelectableCategory): CategoryMeta {
   return CATEGORIES.find((c) => c.id === id) ?? CATEGORIES[0];
 }
 
+/** "전체"를 뺀 실제 카테고리 id 목록. 카테고리별 통계를 순회할 때 쓴다. */
+export const CATEGORY_IDS: CategoryId[] = ["fun", "development", "exercise", "study", "growth"];
+
 export interface StatsData {
   totalCompleted: number;
   todayCompleted: number;
   lastCompletedDate: string | null;
   streak: number;
   bestStreak: number;
+  /** 카테고리별 완료 횟수 */
+  categoryCompleted: Record<CategoryId, number>;
+}
+
+/** 완료한 미션 한 건의 기록 */
+export interface HistoryEntry {
+  id: number;
+  title: string;
+  category: CategoryId;
+  /** 로컬 시간 기준 YYYY-MM-DD */
+  date: string;
+  /** 정렬용 타임스탬프 */
+  completedAt: number;
 }

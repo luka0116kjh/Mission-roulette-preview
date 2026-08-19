@@ -42,18 +42,20 @@ npm run preview  # 빌드 결과 확인
 ```text
 src/
 ├─ components/
-│  ├─ Header.tsx             제목·날짜
+│  ├─ Header.tsx             제목·날짜·다크모드 토글
 │  ├─ CategorySelector.tsx   카테고리 칩
 │  ├─ Roulette.tsx           세로 릴 애니메이션
-│  ├─ MissionCard.tsx        결과 카드 (희귀도/난이도/버튼)
+│  ├─ MissionCard.tsx        결과 카드 (희귀도/난이도/즐겨찾기/복사/버튼)
 │  ├─ MissionComplete.tsx    완료 화면
-│  └─ Stats.tsx              오늘/전체/연속 기록
+│  ├─ Stats.tsx              오늘/전체/연속/카테고리별 기록
+│  ├─ Favorites.tsx          즐겨찾기한 미션 목록, 바로 다시 뽑기
+│  └─ History.tsx            최근 완료한 미션 목록
 ├─ data/missions.ts          미션 60개 (카테고리당 12개)
 ├─ types/mission.ts          타입 + 카테고리/희귀도 메타
-├─ utils/randomMission.ts    희귀도 가중 추첨, 릴 생성
-├─ utils/storage.ts          localStorage, 날짜 리셋, streak
+├─ utils/randomMission.ts    희귀도 가중 추첨, 릴 생성, id로 미션 조회
+├─ utils/storage.ts          localStorage, 날짜 리셋, streak, 히스토리/즐겨찾기/테마
 ├─ App.tsx                   idle → rolling → result → complete
-└─ index.css                 디자인 토큰 + 전체 스타일
+└─ index.css                 디자인 토큰(라이트/다크) + 전체 스타일
 ```
 
 ## 동작 규칙
@@ -63,8 +65,14 @@ src/
 - **중복 클릭 방지**: `isRolling` 동안 뽑기 버튼과 카테고리 버튼이 비활성화된다.
 - **날짜 처리**: 앱을 열 때 저장된 날짜와 오늘을 비교해 `todayCompleted`를 0으로 되돌린다. 하루를 건너뛰면 `streak`도 0이 된다. 전체 완료 횟수와 최고 연속 기록은 유지된다.
 - **저장 실패 대비**: `localStorage`를 쓸 수 없는 환경(사생활 보호 모드, 샌드박스 iframe)에서는 자동으로 메모리 저장소로 대체돼 앱이 죽지 않는다.
+- **미션 공유**: 결과 카드의 복사 아이콘을 누르면 제목+설명이 클립보드로 복사된다. `navigator.clipboard`가 없는 환경(비보안 컨텍스트 등)에서는 `execCommand` 방식으로 대체한다.
+- **즐겨찾기**: 결과 카드의 별 아이콘으로 즐겨찾기를 토글한다. 즐겨찾기 목록에서 항목을 누르면 룰렛 없이 바로 그 미션이 결과로 뜬다(다시 뽑기 용도).
+- **히스토리**: 미션을 완료할 때마다 제목/카테고리/날짜를 기록에 남긴다. 최근 20건을 저장하고 화면에는 최근 8건만 보여준다.
+- **다크모드**: 저장된 설정이 없으면 시스템 설정(`prefers-color-scheme`)을 따르고, 헤더의 토글을 누르면 그 이후로는 선택한 값을 고정 저장한다.
 
-## 저장 형식 (`mission-roulette:stats`)
+## 저장 형식
+
+`mission-roulette:stats`
 
 ```json
 {
@@ -72,9 +80,24 @@ src/
   "todayCompleted": 3,
   "lastCompletedDate": "2026-08-19",
   "streak": 4,
-  "bestStreak": 9
+  "bestStreak": 9,
+  "categoryCompleted": { "fun": 10, "development": 8, "exercise": 3, "study": 4, "growth": 2 }
 }
 ```
+
+`mission-roulette:history` — 최근 완료 순으로 최대 20건.
+
+```json
+[{ "id": 12, "title": "미션 제목", "category": "fun", "date": "2026-08-19", "completedAt": 1755590400000 }]
+```
+
+`mission-roulette:favorites` — 즐겨찾기한 미션 id 배열.
+
+```json
+[3, 41, 7]
+```
+
+`mission-roulette:theme` — `"light"` 또는 `"dark"`. 사용자가 직접 토글하기 전에는 저장되지 않는다.
 
 ## 미션 추가하기
 

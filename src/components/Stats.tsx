@@ -1,4 +1,4 @@
-import type { StatsData } from "../types/mission";
+import { CATEGORY_IDS, categoryMeta, type StatsData } from "../types/mission";
 
 interface Props {
   stats: StatsData;
@@ -7,6 +7,12 @@ interface Props {
 
 export default function Stats({ stats, onReset }: Props) {
   const empty = stats.totalCompleted === 0;
+
+  const breakdown = CATEGORY_IDS.map((id) => ({
+    id,
+    label: categoryMeta(id).label,
+    count: stats.categoryCompleted[id] ?? 0,
+  })).filter((row) => row.count > 0);
 
   return (
     <section className="stats">
@@ -26,6 +32,17 @@ export default function Stats({ stats, onReset }: Props) {
           <dd>{stats.streak}일</dd>
         </div>
       </dl>
+
+      {breakdown.length > 0 && (
+        <dl className="stats__breakdown">
+          {breakdown.map((row) => (
+            <div key={row.id} className="stats__breakdown-row">
+              <dt>{row.label}</dt>
+              <dd>{row.count}개</dd>
+            </div>
+          ))}
+        </dl>
+      )}
 
       <p className="stats__foot">
         {empty ? (

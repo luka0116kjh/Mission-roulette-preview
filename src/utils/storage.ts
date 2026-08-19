@@ -1,6 +1,19 @@
-import type { StatsData } from "../types/mission";
+import { CATEGORY_IDS, type CategoryId, type HistoryEntry, type Mission, type StatsData } from "../types/mission";
 
 const STORAGE_KEY = "mission-roulette:stats";
+const HISTORY_KEY = "mission-roulette:history";
+const FAVORITES_KEY = "mission-roulette:favorites";
+const THEME_KEY = "mission-roulette:theme";
+
+/** 히스토리에 남기는 최근 기록 개수 */
+const HISTORY_LIMIT = 20;
+
+function emptyCategoryCompleted(): Record<CategoryId, number> {
+  return CATEGORY_IDS.reduce(
+    (acc, id) => ({ ...acc, [id]: 0 }),
+    {} as Record<CategoryId, number>,
+  );
+}
 
 export const EMPTY_STATS: StatsData = {
   totalCompleted: 0,
@@ -8,6 +21,7 @@ export const EMPTY_STATS: StatsData = {
   lastCompletedDate: null,
   streak: 0,
   bestStreak: 0,
+  categoryCompleted: emptyCategoryCompleted(),
 };
 
 /**
@@ -53,6 +67,12 @@ function sanitize(value: unknown): StatsData {
   const toCount = (n: unknown) =>
     typeof n === "number" && Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
 
+  const rawCategory = (raw.categoryCompleted ?? {}) as Partial<Record<CategoryId, unknown>>;
+  const categoryCompleted = CATEGORY_IDS.reduce(
+    (acc, id) => ({ ...acc, [id]: toCount(rawCategory[id]) }),
+    {} as Record<CategoryId, number>,
+  );
+
   return {
     totalCompleted: toCount(raw.totalCompleted),
     todayCompleted: toCount(raw.todayCompleted),
@@ -60,6 +80,7 @@ function sanitize(value: unknown): StatsData {
       typeof raw.lastCompletedDate === "string" ? raw.lastCompletedDate : null,
     streak: toCount(raw.streak),
     bestStreak: toCount(raw.bestStreak),
+    categoryCompleted,
   };
 }
 
@@ -94,7 +115,7 @@ export function saveStats(stats: StatsData): void {
 }
 
 /** 미션 하나를 완료했을 때의 다음 기록 상태 */
-export function completeMission(current: StatsData): StatsData {
+export function completeMission(current: StatsData, category: CategoryId): StatsData {
   const today = todayKey();
   const gap =
     current.lastCompletedDate === null
@@ -109,6 +130,10 @@ export function completeMission(current: StatsData): StatsData {
     lastCompletedDate: today,
     streak,
     bestStreak: Math.max(current.bestStreak, streak),
+    categoryCompleted: {
+      ...current.categoryCompleted,
+      [category]: (current.categoryCompleted[category] ?? 0) + 1,
+    },
   };
 
   saveStats(next);
@@ -118,4 +143,86 @@ export function completeMission(current: StatsData): StatsData {
 export function resetStats(): StatsData {
   saveStats(EMPTY_STATS);
   return { ...EMPTY_STATS };
+}
+
+/* ============================================================ 히스토리 */
+
+function sanitizeHistory(value: unknown): HistoryEntry[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter(
+      (item): item is HistoryEntry =>
+        !!item &&
+        typeof item === "object" &&
+        typeof (item as HistoryEntry).id === "number" &&
+        typeof (item as HistoryEntry).title === "string" &&
+        typeof (item as HistoryEntry).category === "string" &&
+        typeof (item as HistoryEntry).date === "string" &&
+        typeof (item as HistoryEntry).completedAt === "number",
+    )
+    .slice(0, HISTORY_LIMIT);
+}
+
+export function loadHistory(): HistoryEntry[] {
+  const raw = readRaw(HISTORY_KEY);
+  if (!raw) return [];
+  try {
+    return sanitizeHistory(JSON.parse(raw));
+  } catch {
+    return [];
+  }
+}
+
+/** 완료한 미션을 히스토리 맨 앞에 추가하고, 최근 HISTORY_LIMIT개만 남긴다. */
+export function addHistoryEntry(mission: Mission): HistoryEntry[] {
+  const entry: HistoryEntry = {
+    id: mission.id,
+    title: mission.title,
+    category: mission.category,
+    date: todayKey(),
+    completedAt: Date.now(),
+  };
+
+  const next = [entry, ...loadHistory()].slice(0, HISTORY_LIMIT);
+  writeRaw(HISTORY_KEY, JSON.stringify(next));
+  return next;
+}
+
+/* ============================================================ 즐겨찾기 */
+
+function sanitizeIds(value: unknown): number[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((n): n is number => typeof n === "number" && Number.isFinite(n));
+}
+
+export function loadFavorites(): number[] {
+  const raw = readRaw(FAVORITES_KEY);
+  if (!raw) return [];
+  try {
+    return sanitizeIds(JSON.parse(raw));
+  } catch {
+    return [];
+  }
+}
+
+/** 즐겨찾기에 있으면 빼고, 없으면 추가한다. */
+export function toggleFavorite(id: number): number[] {
+  const current = loadFavorites();
+  const next = current.includes(id) ? current.filter((f) => f !== id) : [...current, id];
+  writeRaw(FAVORITES_KEY, JSON.stringify(next));
+  return next;
+}
+
+/* ============================================================ 테마 */
+
+export type Theme = "light" | "dark";
+
+export function loadTheme(): Theme | null {
+  const raw = readRaw(THEME_KEY);
+  return raw === "light" || raw === "dark" ? raw : null;
+}
+
+export function saveTheme(theme: Theme): void {
+  writeRaw(THEME_KEY, theme);
 }

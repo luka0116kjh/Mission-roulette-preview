@@ -15,6 +15,11 @@ export function missionsOf(category: SelectableCategory): Mission[] {
     : MISSIONS.filter((m) => m.category === category);
 }
 
+/** id로 미션을 찾는다. 즐겨찾기·히스토리는 id만 저장하므로 조회할 때 쓴다. */
+export function missionById(id: number): Mission | undefined {
+  return MISSIONS.find((m) => m.id === id);
+}
+
 /**
  * 희귀도를 먼저 뽑는다.
  * 풀에 존재하지 않는 희귀도는 후보에서 빼고 가중치를 다시 정규화한다.
