@@ -1,0 +1,572 @@
+/* ============================================================
+   Mission Roulette
+   흰 배경 · 굵은 한글 타이포 · 파랑 강조색 1종 · 라운드 카드.
+   그라데이션, 장식 효과, 그림자 없음.
+   ============================================================ */
+:root {
+  --bg: #ffffff;
+  --fill: #f2f4f6;
+  --fill-soft: #f9fafb;
+  --line: #e5e8eb;
+
+  --ink: #191f28;
+  --gray-700: #4e5968;
+  --gray-500: #8b95a1;
+  --gray-400: #b0b8c1;
+
+  --blue: #3182f6;
+  --blue-press: #1b64da;
+  --blue-bg: #e8f3ff;
+
+  --r-card: 20px;
+  --r-btn: 14px;
+  --r-chip: 13px;
+
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    "Apple SD Gothic Neo", "Segoe UI", Roboto, "Noto Sans KR", "Malgun Gothic", sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  overscroll-behavior-y: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  letter-spacing: -0.02em;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+p,
+dl,
+dd {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.section-title {
+  margin-bottom: 12px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* ============================================================ 레이아웃 */
+.app {
+  padding: 0 max(20px, env(safe-area-inset-left)) 0 max(20px, env(safe-area-inset-right));
+}
+
+.shell {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 0 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ============================================================ 헤더 */
+.header__eyebrow {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--blue);
+}
+
+.header__title {
+  margin-top: 10px;
+  font-size: 27px;
+  line-height: 1.42;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+
+.header__sub {
+  margin-top: 12px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--gray-700);
+  word-break: keep-all;
+}
+
+.header__meta {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--gray-500);
+}
+
+/* ============================================================ 카테고리 */
+.picker__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.chip {
+  padding: 15px 10px;
+  border: 0;
+  border-radius: var(--r-chip);
+  background: var(--fill);
+  color: var(--gray-700);
+  font-size: 15px;
+  font-weight: 600;
+  transition: background-color 0.15s var(--ease), color 0.15s var(--ease),
+    transform 0.12s var(--ease);
+}
+
+.chip:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.chip--on {
+  background: var(--blue-bg);
+  color: var(--blue);
+  font-weight: 700;
+}
+
+.chip:disabled {
+  color: var(--gray-400);
+  cursor: not-allowed;
+}
+
+/* ============================================================ 무대 */
+.stage {
+  min-height: 236px;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel {
+  padding: 24px 20px 26px;
+  border-radius: var(--r-card);
+  background: var(--fill-soft);
+  animation: rise 0.28s var(--ease) both;
+}
+
+.panel__tags {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.badge {
+  padding: 5px 9px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.badge--common,
+.badge--rare,
+.badge--epic {
+  background: var(--fill);
+  color: var(--gray-700);
+}
+
+/* 최고 등급만 강조색을 쓴다 */
+.badge--legendary {
+  background: var(--blue-bg);
+  color: var(--blue);
+}
+
+.badge--plain {
+  background: var(--bg);
+  color: var(--gray-700);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.panel__title {
+  font-size: 21px;
+  line-height: 1.45;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  word-break: keep-all;
+}
+
+.panel__desc {
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.62;
+  color: var(--gray-700);
+  word-break: keep-all;
+}
+
+/* 난이도 */
+.meter {
+  margin-top: 26px;
+}
+
+.meter__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--gray-500);
+}
+
+.meter__head strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-700);
+}
+
+.meter__track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.meter__track span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--blue);
+  transition: width 0.5s var(--ease);
+}
+
+/* 뽑기 전 */
+.panel--empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 236px;
+  text-align: center;
+}
+
+.empty__title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.empty__desc {
+  margin-top: 8px;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--gray-500);
+  word-break: keep-all;
+}
+
+.empty__desc strong {
+  color: var(--gray-700);
+}
+
+/* 완료 */
+.panel--done {
+  padding-top: 30px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 18px;
+  border-radius: 50%;
+  background: var(--blue-bg);
+  color: var(--blue);
+}
+
+.check svg {
+  width: 24px;
+  height: 24px;
+}
+
+.done__line {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--gray-500);
+}
+
+.done__line strong {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* ============================================================ 룰렛 */
+.reel {
+  position: relative;
+  flex: none;
+  height: 228px; /* 76px × 3칸 */
+  border-radius: var(--r-card);
+  background: var(--fill-soft);
+  overflow: hidden;
+}
+
+.reel__focus {
+  position: absolute;
+  top: 76px;
+  left: 10px;
+  right: 10px;
+  height: 76px;
+  border-radius: var(--r-btn);
+  background: var(--blue-bg);
+}
+
+.reel__viewport {
+  position: relative;
+  height: 100%;
+  padding-top: 76px; /* 첫 칸을 가운데로 */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 28%,
+    #000 72%,
+    transparent
+  );
+  mask-image: linear-gradient(to bottom, transparent, #000 28%, #000 72%, transparent);
+}
+
+.reel__strip {
+  will-change: transform;
+}
+
+.reel__item {
+  height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 22px;
+}
+
+.reel__tag {
+  flex: none;
+  width: 54px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--gray-500);
+}
+
+.reel__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gray-700);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ============================================================ 버튼 */
+.actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn {
+  width: 100%;
+  padding: 16px;
+  border: 0;
+  border-radius: var(--r-btn);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  transition: background-color 0.15s var(--ease), color 0.15s var(--ease),
+    transform 0.12s var(--ease);
+}
+
+.btn--primary {
+  background: var(--blue);
+  color: #fff;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--blue-press);
+}
+
+.btn--primary:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.btn--primary:disabled {
+  background: var(--fill);
+  color: var(--gray-400);
+  cursor: progress;
+}
+
+.btn--sub {
+  background: var(--fill);
+  color: var(--gray-700);
+}
+
+.btn--sub:hover {
+  background: #e8ebee;
+}
+
+.btn--sub:active {
+  transform: scale(0.985);
+}
+
+/* 화면 아래에 붙는 기본 동작 버튼 */
+.cta {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin-top: -20px;
+  padding: 12px 0 max(14px, env(safe-area-inset-bottom));
+  background: var(--bg);
+}
+
+/* ============================================================ 기록 */
+.stats__list {
+  padding: 4px 20px;
+  border-radius: var(--r-card);
+  background: var(--fill-soft);
+}
+
+.stats__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 0;
+}
+
+.stats__row + .stats__row {
+  border-top: 1px solid var(--line);
+}
+
+.stats__row dt {
+  font-size: 15px;
+  color: var(--gray-700);
+}
+
+.stats__row dd {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.stats__foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 0 4px;
+  font-size: 13px;
+  color: var(--gray-500);
+}
+
+.linkbtn {
+  flex: none;
+  margin: -12px -8px;
+  padding: 12px 8px;
+  border: 0;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-500);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.linkbtn:hover {
+  color: var(--gray-700);
+}
+
+/* ============================================================ 반응형 */
+@media (max-width: 359px) {
+  .app {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .header__title {
+    font-size: 24px;
+  }
+
+  .chip {
+    padding: 15px 6px;
+    font-size: 14px;
+  }
+
+  .panel {
+    padding: 20px 16px 22px;
+  }
+
+  .reel__item {
+    padding: 0 16px;
+  }
+
+  .reel__tag {
+    width: 46px;
+  }
+}
+
+@media (min-width: 560px) {
+  .shell {
+    padding: 44px 0 52px;
+    gap: 36px;
+  }
+
+  .header__title {
+    font-size: 30px;
+  }
+
+  .panel {
+    padding: 28px 26px 30px;
+  }
+
+  .panel__title {
+    font-size: 23px;
+  }
+
+  .actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* 넓은 화면에서는 보조 동작을 왼쪽에 둔다 */
+  .btn--sub {
+    order: -1;
+  }
+}
+
+/* ============================================================ 모션 */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
